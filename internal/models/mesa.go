@@ -4,6 +4,7 @@ import "time"
 
 type Mesa struct {
 	ID        uint   `gorm:"column:id;primaryKey;autoIncrement" json:"id"`
+	Numero    string `gorm:"column:nombre" json:"numero"`
 	Estado    string `gorm:"column:estado;not null" json:"estado"`
 	Capacidad uint   `gorm:"column:capacidad;not null" json:"capacidad"`
 

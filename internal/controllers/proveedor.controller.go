@@ -2,62 +2,58 @@ package controllers
 
 import (
 	"backend-restaurant-delitto/internal/db"
+	"backend-restaurant-delitto/internal/functions"
 	"backend-restaurant-delitto/internal/models"
+	"backend-restaurant-delitto/internal/querys"
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-type TypeProveedor struct {
-	ID            uint   `json:"id"`
-	NombreEmpresa string `json:"nombre_empresa"`
+type ProveedorDAO struct {
+	ID        uint   `json:"id"`
+	Nombre    string `json:"nombre"`
+	Telefono  string `json:"telefono"`
+	Correo    string `json:"correo"`
+	Direccion string `json:"direccion"`
+	Estado    string `json:"estado"`
 }
 
-type TypeModificadoProveedor struct {
-	NombreEmpresa string `json:"nombre_empresa"`
+type ProovedorModificado struct {
+	Nombre    string `json:"nombre"`
+	Telefono  string `json:"telefono"`
+	Correo    string `json:"correo"`
+	Direccion string `json:"direccion"`
+	Estado    string `json:"estado"`
 }
 
 func ObtenerProveedores(w http.ResponseWriter, r *http.Request) {
 
-	var proveedores []TypeProveedor
+	var proveedores []ProveedorDAO
 
-	query := `select pro.id, pro.nombre_empresa from proveedores as pro`
-
-	err := db.GDB.Raw(query).Scan(&proveedores).Error
+	err := db.GDB.Raw(querys.Proovedores).Scan(&proveedores).Error
 	if err != nil {
 		http.Error(w, "Error en la consulta", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(proveedores); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(proveedores)
 }
 
 func ObtenerProveedor(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	var proveedor TypeProveedor
+	var proveedor ProveedorDAO
 
-	query := `select pro.id, pro.nombre_empresa from proveedores as pro where pro.id = ?`
-
-	err := db.GDB.Raw(query, id).Scan(&proveedor).Error
+	err := db.GDB.Raw(querys.Proovedor, id).First(&proveedor).Error
 	if err != nil {
 		http.Error(w, "Error en la consulta", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(proveedor); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(proveedor)
 }
 
 func AgregarProveedor(w http.ResponseWriter, r *http.Request) {
@@ -77,12 +73,7 @@ func AgregarProveedor(w http.ResponseWriter, r *http.Request) {
 	tx.Commit()
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(&proveedor); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(&proveedor)
 }
 
 func ModificarProveedor(w http.ResponseWriter, r *http.Request) {
@@ -95,14 +86,23 @@ func ModificarProveedor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var proveedorActualizado TypeModificadoProveedor
+	var proveedorActualizado ProovedorModificado
 	if err := json.NewDecoder(r.Body).Decode(&proveedorActualizado); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Cambios
-	proveedorExistente.NombreEmpresa = proveedorActualizado.NombreEmpresa
+	proveedorExistente.Nombre = proveedorActualizado.Nombre
+	proveedorExistente.Telefono = proveedorActualizado.Telefono
+	proveedorExistente.Correo = proveedorActualizado.Correo
+	proveedorExistente.Direccion = proveedorActualizado.Direccion
+	nuevoEstado, err := functions.ActualizarEstado(proveedorActualizado.Estado)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	proveedorExistente.Estado = nuevoEstado
 
 	if err := db.GDB.Save(&proveedorExistente).Error; err != nil {
 		http.Error(w, "Error al actualizar usuario", http.StatusInternalServerError)
@@ -110,9 +110,5 @@ func ModificarProveedor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(&proveedorExistente); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(&proveedorExistente)
 }

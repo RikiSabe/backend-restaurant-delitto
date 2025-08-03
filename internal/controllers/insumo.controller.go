@@ -88,37 +88,37 @@ func AgregarInsumo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ModificarInsumo(w http.ResponseWriter, r *http.Request) {
-	id_insumo := mux.Vars(r)["id"]
-	var insumoExistente models.Insumo
+// func ModificarInsumo(w http.ResponseWriter, r *http.Request) {
+// 	id_insumo := mux.Vars(r)["id"]
+// 	var insumoExistente models.Insumo
 
-	err := db.GDB.Where("id = ?", id_insumo).First(&insumoExistente).Error
-	if err != nil {
-		http.Error(w, "Insumo no encontrado", http.StatusNotFound)
-		return
-	}
+// 	err := db.GDB.Where("id = ?", id_insumo).First(&insumoExistente).Error
+// 	if err != nil {
+// 		http.Error(w, "Insumo no encontrado", http.StatusNotFound)
+// 		return
+// 	}
 
-	var insumoActualizado TypeModificadoInsumo
-	if err := json.NewDecoder(r.Body).Decode(&insumoActualizado); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+// 	var insumoActualizado TypeModificadoInsumo
+// 	if err := json.NewDecoder(r.Body).Decode(&insumoActualizado); err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
 
-	// Cambios
-	insumoExistente.Nombre = insumoActualizado.Nombre
-	insumoExistente.Cantidad = insumoActualizado.Cantidad
-	insumoExistente.IDProveedor = insumoActualizado.IDProveedor
+// 	// Cambios
+// 	insumoExistente.Nombre = insumoActualizado.Nombre
+// 	insumoExistente.Cantidad = insumoActualizado.Cantidad
+// 	insumoExistente.IDProveedor = insumoActualizado.IDProveedor
 
-	if err := db.GDB.Save(&insumoExistente).Error; err != nil {
-		http.Error(w, "Error al actualizar Insumo", http.StatusInternalServerError)
-		return
-	}
+// 	if err := db.GDB.Save(&insumoExistente).Error; err != nil {
+// 		http.Error(w, "Error al actualizar Insumo", http.StatusInternalServerError)
+// 		return
+// 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(w).Encode(&insumoExistente); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
+// 	if err := json.NewEncoder(w).Encode(&insumoExistente); err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend-restaurant-delitto/internal/db"
+	"backend-restaurant-delitto/internal/functions"
 	"backend-restaurant-delitto/internal/models"
 	"backend-restaurant-delitto/internal/routers"
 	"fmt"
@@ -31,34 +32,24 @@ func main() {
 
 	if err := db.GDB.AutoMigrate(
 		/* migraciones */
-		&models.Categoria{},
+		&models.Rol{},
+		&models.CategoriaProducto{},
+		&models.CategoriaInsumo{},
 		&models.Proveedor{},
 		&models.Mesa{},
 		&models.Usuario{},
-
 		&models.Producto{},
 		&models.Insumo{},
 		&models.Pedido{},
-
-		&models.PedidosProductos{},
 		&models.UsuariosPedidos{},
-		&models.PedidosInsumos{},
+		&models.DetallePedido{},
+		&models.Factura{},
 	); err != nil {
 		log.Fatal("Error al migrar los modelos de la db:", err)
 	}
 
-	var count int64
-	if err := db.GDB.Model(&models.Usuario{}).Count(&count).Error; err != nil {
-		log.Printf("Error al contar usuarios: %v", err)
-	} else if count == 0 {
-		usuario := models.Usuario{Nombre: "user", Contra: "admin"}
-		if err := db.GDB.Create(&usuario).Error; err != nil {
-			log.Printf("Error al crear usuario por defecto: %v", err)
-		} else {
-			log.Println("Usuario por defecto creado: user / admin")
-		}
-	} else {
-		log.Printf("Ya hay usuarios registrados")
+	if err := functions.CreacionInicial(); err != nil {
+		log.Fatal("Error al iniciar los datos predeterminados")
 	}
 
 	r := mux.NewRouter()
