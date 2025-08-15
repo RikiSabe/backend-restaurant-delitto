@@ -15,7 +15,7 @@ func InitEndPoints(r *mux.Router) {
 func endPointsAPI(api *mux.Router) {
 	v1 := api.PathPrefix("/v1").Subrouter()
 
-	// v1.HandleFunc("/login", c.Auth.AuthLoginWeb).Methods(http.MethodPost)
+	v1.HandleFunc("/login", c.Auth.AuthLoginWeb).Methods(http.MethodPost)
 
 	v1Usuarios := v1.PathPrefix("/usuarios").Subrouter()
 	v1Usuarios.HandleFunc("/{id}", c.ObtenerUsuario).Methods(http.MethodGet)
@@ -53,7 +53,7 @@ func endPointsAPI(api *mux.Router) {
 	// v1Mesa.HandleFunc("", c.ObtenerMesas).Methods(http.MethodGet)
 	// v1Mesa.HandleFunc("", c.AgregarMesa).Methods(http.MethodPost)
 
-	// v1Pedido := v1.PathPrefix("/pedidos").Subrouter()
-	// v1Pedido.HandleFunc("", c.RegistrarPedido).Methods(http.MethodPost)
-	// v1Pedido.HandleFunc("", c.ObtenerPedidos).Methods(http.MethodGet)
+	v1Pedido := v1.PathPrefix("/pedidos").Subrouter()
+	v1Pedido.HandleFunc("", c.RegistrarPedido).Methods(http.MethodPost)
+	v1Pedido.HandleFunc("", c.ObtenerPedidos).Methods(http.MethodGet)
 }

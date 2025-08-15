@@ -77,6 +77,7 @@ func AgregarUsuario(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Rol no valido:"+err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	nuevoUsuario := models.Usuario{
 		Nombre:   usuario.Nombre,
 		Apellido: usuario.Apellido,

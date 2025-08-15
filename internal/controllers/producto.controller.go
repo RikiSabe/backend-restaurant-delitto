@@ -115,19 +115,8 @@ func AgregarProducto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nuevoPrecio, err := strconv.ParseFloat(r.FormValue("precio"), 64)
-	if err != nil {
-		http.Error(w, "Precio no valido", http.StatusBadRequest)
-		return
-	}
-	nuevoEstado, err := functions.ActualizarEstado(r.FormValue("estado"))
-	if err != nil {
-		http.Error(w, "Estado no valido", http.StatusBadRequest)
-		return
-	}
-
 	direccionImagen := "N/A"
-	file, handler, err := r.FormFile("imagen")
+	file, handler, err := r.FormFile("foto")
 	if err == nil {
 		defer file.Close()
 
@@ -153,9 +142,20 @@ func AgregarProducto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nuevaCategoria, err := functions.ActualizarCategoria(r.FormValue("categoria"))
+	nuevoPrecio, err := strconv.ParseFloat(r.FormValue("precio"), 64)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Precio no valido", http.StatusBadRequest)
+		return
+	}
+	nuevoEstado, err := functions.ActualizarEstado(r.FormValue("estado"))
+	if err != nil {
+		http.Error(w, "Estado no valido", http.StatusBadRequest)
+		return
+	}
+
+	nuevoIdCategoria, err := strconv.ParseInt(r.FormValue("id_categoria"), 10, 64)
+	if err != nil {
+		http.Error(w, "ID no valida", http.StatusBadRequest)
 		return
 	}
 
@@ -165,7 +165,7 @@ func AgregarProducto(w http.ResponseWriter, r *http.Request) {
 		Precio:      nuevoPrecio,
 		Imagen:      direccionImagen,
 		Estado:      nuevoEstado,
-		IDCategoria: nuevaCategoria,
+		IDCategoria: uint(nuevoIdCategoria),
 	}
 
 	tx := db.GDB.Begin()
@@ -197,7 +197,7 @@ func ModificarProducto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, handler, err := r.FormFile("imagen")
+	file, handler, err := r.FormFile("foto")
 	if err == nil {
 		defer file.Close()
 
@@ -240,12 +240,12 @@ func ModificarProducto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	productoExistente.Estado = nuevoEstado
-	nuevaCategoria, err := functions.ActualizarCategoria(r.FormValue("categoria"))
+	nuevaCategoria, err := strconv.ParseInt(r.FormValue("id_categoria"), 10, 64)
 	if err != nil {
 		http.Error(w, "Categoria no valida", http.StatusBadRequest)
 		return
 	}
-	productoExistente.IDCategoria = nuevaCategoria
+	productoExistente.IDCategoria = uint(nuevaCategoria)
 
 	if err := db.GDB.Save(&productoExistente).Error; err != nil {
 		http.Error(w, "Error al actualizar producto", http.StatusInternalServerError)
