@@ -3,62 +3,51 @@ package controllers
 import (
 	"backend-restaurant-delitto/internal/db"
 	"backend-restaurant-delitto/internal/models"
+	"backend-restaurant-delitto/internal/querys"
 	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-type TypeMesa struct {
+type Mesas struct {
 	ID        uint   `json:"id"`
+	Nombre    string `json:"nombre"`
 	Estado    string `json:"estado"`
 	Capacidad uint   `json:"capacidad"`
 }
 
-type TypeModificadoMesa struct {
+type Mesa struct {
+	Nombre    string `json:"nombre"`
 	Estado    string `json:"estado"`
 	Capacidad uint   `json:"capacidad"`
 }
 
 func ObtenerMesas(w http.ResponseWriter, r *http.Request) {
-	var mesas []TypeMesa
+	var mesas []Mesas
 
-	query := `select me.id, me.estado, me.capacidad from mesas as me`
-
-	err := db.GDB.Raw(query).Scan(&mesas).Error
+	err := db.GDB.Raw(querys.Mesas).Scan(&mesas).Error
 	if err != nil {
 		http.Error(w, "Error en la consulta", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(mesas); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(mesas)
 }
 
 func ObtenerMesa(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	var mesa TypeMesa
+	var mesa Mesa
 
-	query := `select me.id, me.estado, me.capacidad from mesas as me where me.id = ?`
-
-	err := db.GDB.Raw(query, id).Scan(&mesa).Error
+	err := db.GDB.Raw(querys.Mesa, id).Scan(&mesa).Error
 	if err != nil {
 		http.Error(w, "Error en la consulta", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(mesa); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(mesa)
 }
 
 func AgregarMesa(w http.ResponseWriter, r *http.Request) {
@@ -78,12 +67,7 @@ func AgregarMesa(w http.ResponseWriter, r *http.Request) {
 	tx.Commit()
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(mesa); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(mesa)
 }
 
 func ModificarMesa(w http.ResponseWriter, r *http.Request) {
@@ -96,13 +80,14 @@ func ModificarMesa(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var mesaActualizada TypeModificadoMesa
+	var mesaActualizada Mesa
 	if err := json.NewDecoder(r.Body).Decode(&mesaActualizada); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Cambios
+	mesaExistente.Nombre = mesaActualizada.Nombre
 	mesaExistente.Estado = mesaActualizada.Estado
 	mesaExistente.Capacidad = mesaActualizada.Capacidad
 
@@ -112,10 +97,25 @@ func ModificarMesa(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&mesaExistente)
+}
 
-	if err := json.NewEncoder(w).Encode(&mesaExistente); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+func LiberarMesa(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	var mesa models.Mesa
+
+	err := db.GDB.Where("id = ?", id).First(&mesa).Error
+	if err != nil {
+		http.Error(w, "Mesa no encontrada", http.StatusNotFound)
 		return
 	}
+	mesa.Estado = "Disponible"
+
+	if err := db.GDB.Save(&mesa).Error; err != nil {
+		http.Error(w, "Error al guardar estado de la mesa", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&mesa)
 }

@@ -22,6 +22,7 @@ type PedidoEntrante struct {
 	Origen    string                          `json:"origen"`
 	Productos datatypes.JSONType[[]Productos] `json:"productos"`
 	Estado    string                          `json:"estado"`
+	IDMesa    uint                            `json:"id_mesa"`
 }
 
 func RegistrarPedido(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +57,18 @@ func RegistrarPedido(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error en relacion Pedido - Producto", http.StatusInternalServerError)
 			return
 		}
+	}
+	var mesa models.Mesa
+	if err := tx.Where("id = ?", pedidoEntrante.IDMesa).First(&mesa).Error; err != nil {
+		tx.Rollback()
+		http.Error(w, "Mesa no encontrada", http.StatusNotFound)
+		return
+	}
+	mesa.Estado = "Ocupado"
+	if err := tx.Save(&mesa).Error; err != nil {
+		tx.Rollback()
+		http.Error(w, "Error al actualizar estado de la mesa", http.StatusInternalServerError)
+		return
 	}
 	tx.Commit()
 

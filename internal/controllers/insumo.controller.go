@@ -3,6 +3,7 @@ package controllers
 import (
 	"backend-restaurant-delitto/internal/db"
 	"backend-restaurant-delitto/internal/models"
+	"backend-restaurant-delitto/internal/querys"
 	"encoding/json"
 	"net/http"
 
@@ -10,57 +11,51 @@ import (
 )
 
 type TypeInsumo struct {
-	ID          uint   `json:"id"`
-	Nombre      string `json:"nombre"`
-	Cantidad    uint   `json:"cantidad"`
-	IDProveedor uint   `json:"id_proveedor"`
+	ID              uint   `json:"id"`
+	Nombre          string `json:"nombre"`
+	StockActual     uint   `json:"stock_actual"`
+	StockMinimo     uint   `json:"stock_minimo"`
+	UnidadMedida    string `json:"unidad_medida"`
+	IDProveedor     uint   `json:"id_proveedor"`
+	NombreProveedor string `json:"nombre_proveedor"`
+	IDCategoria     uint   `json:"id_categoria"`
+	NombreCategoria string `json:"nombre_categoria"`
 }
 
 type TypeModificadoInsumo struct {
-	Nombre      string `json:"nombre"`
-	Cantidad    uint   `json:"cantidad"`
-	IDProveedor uint   `json:"id_proveedor"`
+	Nombre       string `json:"nombre"`
+	StockActual  uint   `json:"stock_actual"`
+	StockMinimo  uint   `json:"stock_minimo"`
+	UnidadMedida string `json:"unidad_medida"`
+	IDProveedor  uint   `json:"id_proveedor"`
+	IDCategoria  uint   `json:"id_categoria"`
 }
 
 func ObtenerInsumos(w http.ResponseWriter, r *http.Request) {
 	var insumos []TypeInsumo
 
-	query := `select ins.id, ins.nombre, ins.cantidad, ins.id_proveedor from insumos as ins`
-
-	err := db.GDB.Raw(query).Scan(&insumos).Error
+	err := db.GDB.Raw(querys.Insumos).Scan(&insumos).Error
 	if err != nil {
 		http.Error(w, "Error en la consulta", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(insumos); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(insumos)
 }
 
 func ObtenerInsumo(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	var insumo TypeInsumo
 
-	query := `select ins.id, ins.nombre, ins.cantidad, ins.id_proveedor from insumos as ins where ins.id = ?`
-
-	err := db.GDB.Raw(query, id).Scan(&insumo).Error
+	err := db.GDB.Raw(querys.Insumo, id).Scan(&insumo).Error
 	if err != nil {
 		http.Error(w, "Error en la consulta", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(insumo); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(insumo)
 }
 
 func AgregarInsumo(w http.ResponseWriter, r *http.Request) {
@@ -80,45 +75,38 @@ func AgregarInsumo(w http.ResponseWriter, r *http.Request) {
 	tx.Commit()
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(insumo)
+}
 
-	if err := json.NewEncoder(w).Encode(insumo); err != nil {
+func ModificarInsumo(w http.ResponseWriter, r *http.Request) {
+	id_insumo := mux.Vars(r)["id"]
+	var insumoExistente models.Insumo
+
+	err := db.GDB.Where("id = ?", id_insumo).First(&insumoExistente).Error
+	if err != nil {
+		http.Error(w, "Insumo no encontrado", http.StatusNotFound)
+		return
+	}
+
+	var insumoActualizado TypeModificadoInsumo
+	if err := json.NewDecoder(r.Body).Decode(&insumoActualizado); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Cambios
+	insumoExistente.Nombre = insumoActualizado.Nombre
+	insumoExistente.StockActual = insumoActualizado.StockActual
+	insumoExistente.StockMinimo = insumoActualizado.StockMinimo
+	insumoExistente.UnidadMedida = insumoActualizado.UnidadMedida
+	insumoExistente.IDProveedor = insumoActualizado.IDProveedor
+	insumoExistente.IDCategoria = insumoActualizado.IDCategoria
+
+	if err := db.GDB.Save(&insumoExistente).Error; err != nil {
+		http.Error(w, "Error al actualizar Insumo", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&insumoExistente)
 }
-
-// func ModificarInsumo(w http.ResponseWriter, r *http.Request) {
-// 	id_insumo := mux.Vars(r)["id"]
-// 	var insumoExistente models.Insumo
-
-// 	err := db.GDB.Where("id = ?", id_insumo).First(&insumoExistente).Error
-// 	if err != nil {
-// 		http.Error(w, "Insumo no encontrado", http.StatusNotFound)
-// 		return
-// 	}
-
-// 	var insumoActualizado TypeModificadoInsumo
-// 	if err := json.NewDecoder(r.Body).Decode(&insumoActualizado); err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	// Cambios
-// 	insumoExistente.Nombre = insumoActualizado.Nombre
-// 	insumoExistente.Cantidad = insumoActualizado.Cantidad
-// 	insumoExistente.IDProveedor = insumoActualizado.IDProveedor
-
-// 	if err := db.GDB.Save(&insumoExistente).Error; err != nil {
-// 		http.Error(w, "Error al actualizar Insumo", http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-
-// 	if err := json.NewEncoder(w).Encode(&insumoExistente); err != nil {
-// 		http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		return
-// 	}
-// }
