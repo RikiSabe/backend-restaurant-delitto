@@ -57,15 +57,29 @@ func ObtenerProveedor(w http.ResponseWriter, r *http.Request) {
 }
 
 func AgregarProveedor(w http.ResponseWriter, r *http.Request) {
-	var proveedor models.Proveedor
+	var proveedor ProovedorModificado
 
 	if err := json.NewDecoder(r.Body).Decode(&proveedor); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	nuevoEstado, err := functions.ActualizarEstado(proveedor.Estado)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	nuevoProveedor := models.Proveedor{
+		Nombre:    proveedor.Nombre,
+		Telefono:  proveedor.Telefono,
+		Correo:    proveedor.Correo,
+		Direccion: proveedor.Direccion,
+		Estado:    nuevoEstado,
+	}
+
 	tx := db.GDB.Begin()
-	if err := tx.Create(&proveedor).Error; err != nil {
+	if err := tx.Create(&nuevoProveedor).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, "Error al agregar Proveedor", http.StatusInternalServerError)
 		return
@@ -73,7 +87,7 @@ func AgregarProveedor(w http.ResponseWriter, r *http.Request) {
 	tx.Commit()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&proveedor)
+	json.NewEncoder(w).Encode(&nuevoProveedor)
 }
 
 func ModificarProveedor(w http.ResponseWriter, r *http.Request) {
