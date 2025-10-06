@@ -4,6 +4,7 @@ import (
 	"backend-restaurant-delitto/internal/db"
 	"backend-restaurant-delitto/internal/models"
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -27,14 +28,17 @@ func (auth) AuthLoginWeb(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("Usuario encontrado en la BD:", usuarioExistente)
+
 	if usuarioExistente.Contra != usuario.Contra {
 		http.Error(w, "Credenciales incorrectas", http.StatusInternalServerError)
 		return
 	}
 
 	type RespuestaUsuario struct {
-		ID  uint   `json:"id"`
-		Rol string `json:"rol"`
+		ID     uint   `json:"id"`
+		Nombre string `json:"nombre"`
+		Rol    string `json:"rol"`
 	}
 
 	var rol models.Rol
@@ -44,8 +48,9 @@ func (auth) AuthLoginWeb(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respuesta := RespuestaUsuario{
-		ID:  usuarioExistente.ID,
-		Rol: rol.Nombre,
+		ID:     usuarioExistente.ID,
+		Nombre: usuarioExistente.Nombre,
+		Rol:    rol.Nombre,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -37,6 +37,7 @@ func RegistrarPedido(w http.ResponseWriter, r *http.Request) {
 		Estado: pedidoEntrante.Estado,
 		Fecha:  time.Now(),
 		Origen: pedidoEntrante.Origen,
+		IDMesa: pedidoEntrante.IDMesa,
 	}
 
 	tx := db.GDB.Begin()

@@ -10,7 +10,7 @@ type Usuario struct {
 	Apellido string `gorm:"column:apellido;size:255" json:"apellido"`
 	CI       string `gorm:"column:ci" json:"ci"`
 	Usuario  string `gorm:"column:usuario;not null" json:"usuario"`
-	Contra   string `gorm:"colum:contra;size:255" json:"contra"`
+	Contra   string `gorm:"column:contra;size:255" json:"contra"`
 	Estado   bool   `gorm:"column:estado" json:"estado"`
 	IDRol    uint   `gorm:"column:id_rol" json:"id_rol"`
 
