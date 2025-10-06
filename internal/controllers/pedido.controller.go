@@ -5,6 +5,7 @@ import (
 	"backend-restaurant-delitto/internal/models"
 	"backend-restaurant-delitto/internal/querys"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -33,10 +34,18 @@ func RegistrarPedido(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pedido, err := json.MarshalIndent(pedidoEntrante, "", "  ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(string(pedido))
+
 	var nuevo_pedido = models.Pedido{
 		Estado: pedidoEntrante.Estado,
 		Fecha:  time.Now(),
 		Origen: pedidoEntrante.Origen,
+		IDMesa: pedidoEntrante.IDMesa,
 	}
 
 	tx := db.GDB.Begin()
@@ -72,7 +81,7 @@ func RegistrarPedido(w http.ResponseWriter, r *http.Request) {
 	}
 	tx.Commit()
 
-	w.Header().Set("Content-Type", "applicaction/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(nuevo_pedido)
 }
 

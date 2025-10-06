@@ -2,6 +2,7 @@ package routers
 
 import (
 	c "backend-restaurant-delitto/internal/controllers"
+	r "backend-restaurant-delitto/internal/reports"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -10,6 +11,7 @@ import (
 func InitEndPoints(r *mux.Router) {
 	api := r.PathPrefix("/api").Subrouter()
 	endPointsAPI(api)
+	reports(api)
 }
 
 func endPointsAPI(api *mux.Router) {
@@ -63,4 +65,13 @@ func endPointsAPI(api *mux.Router) {
 	v1Pedido := v1.PathPrefix("/pedidos").Subrouter()
 	v1Pedido.HandleFunc("", c.RegistrarPedido).Methods(http.MethodPost)
 	v1Pedido.HandleFunc("", c.ObtenerPedidos).Methods(http.MethodGet)
+}
+
+func reports(api *mux.Router) {
+	v1 := api.PathPrefix("/v1").Subrouter()
+
+	v1Reporte := v1.PathPrefix("/reportes").Subrouter()
+	v1Reporte.HandleFunc("/factura/{id}", r.FacturaPedido).Methods(http.MethodGet)
+	v1Reporte.HandleFunc("/productos", r.ReporteProductos).Methods(http.MethodGet)
+	v1Reporte.HandleFunc("/insumos", r.ReporteInsumos).Methods(http.MethodGet)
 }
