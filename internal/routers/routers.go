@@ -74,4 +74,7 @@ func reports(api *mux.Router) {
 	v1Reporte.HandleFunc("/factura/{id}", r.FacturaPedido).Methods(http.MethodGet)
 	v1Reporte.HandleFunc("/productos", r.ReporteProductos).Methods(http.MethodGet)
 	v1Reporte.HandleFunc("/insumos", r.ReporteInsumos).Methods(http.MethodGet)
+	v1Reporte.HandleFunc("/proveedores", r.ReporteProveedores).Methods(http.MethodGet)
+	v1Reporte.HandleFunc("/diario", r.ReportePedidosDiarios).Methods(http.MethodGet)
+	v1Reporte.HandleFunc("/individual/{id}", r.ReportePedidoIndividual).Methods(http.MethodGet)
 }
