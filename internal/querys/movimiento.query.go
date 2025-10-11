@@ -2,7 +2,7 @@ package querys
 
 var Movimientos = `
 	select
-		gv.nombre_gasto,
+		gv.nombre as nombre_gasto,
 		gv.unidad_medida,
 		m.cantidad,
 		m.precio,

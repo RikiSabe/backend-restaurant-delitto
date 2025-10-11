@@ -34,9 +34,14 @@ func ObtenerMovimientos(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movimientos)
 }
 
+type NewMovimiento struct {
+	Cantidad float64 `json:"cantidad"`
+	Precio   uint    `json:"precio"`
+}
+
 func AgregarMovimiento(w http.ResponseWriter, r *http.Request) {
 	id_gasto := mux.Vars(r)["id"]
-	var movimiento models.Movimiento
+	var movimiento NewMovimiento
 
 	if err := json.NewDecoder(r.Body).Decode(&movimiento); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -48,10 +53,16 @@ func AgregarMovimiento(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "ID de gasto inválido", http.StatusBadRequest)
 		return
 	}
-	movimiento.IDGasto = idGastoUint
+
+	data := models.Movimiento{
+		Cantidad: movimiento.Cantidad,
+		Precio:   movimiento.Precio,
+		Fecha:    time.Now(),
+		IDGasto:  idGastoUint,
+	}
 
 	tx := db.GDB.Begin()
-	if err := tx.Create(&movimiento).Error; err != nil {
+	if err := tx.Create(&data).Error; err != nil {
 		tx.Rollback()
 		http.Error(w, "Error al agregar Movimiento", http.StatusInternalServerError)
 		return
@@ -59,5 +70,5 @@ func AgregarMovimiento(w http.ResponseWriter, r *http.Request) {
 	tx.Commit()
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(movimiento)
+	json.NewEncoder(w).Encode(data)
 }
