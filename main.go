@@ -44,6 +44,9 @@ func main() {
 		&models.UsuariosPedidos{},
 		&models.DetallePedido{},
 		&models.Factura{},
+
+		&models.GastoVario{},
+		&models.Movimiento{},
 	); err != nil {
 		log.Fatal("Error al migrar los modelos de la db:", err)
 	}

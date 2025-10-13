@@ -56,15 +56,25 @@ func endPointsAPI(api *mux.Router) {
 	v1CategoriaInsumos.HandleFunc("", c.AgregarCategoriaInsumos).Methods(http.MethodPost)
 
 	v1Mesa := v1.PathPrefix("/mesas").Subrouter()
+	v1Mesa.HandleFunc("/liberar/{id}", c.LiberarMesa).Methods(http.MethodPut)
 	v1Mesa.HandleFunc("/{id}", c.ObtenerMesa).Methods(http.MethodGet)
 	v1Mesa.HandleFunc("/{id}", c.ModificarMesa).Methods(http.MethodPut)
 	v1Mesa.HandleFunc("", c.ObtenerMesas).Methods(http.MethodGet)
 	v1Mesa.HandleFunc("", c.AgregarMesa).Methods(http.MethodPost)
-	v1Mesa.HandleFunc("/liberar/{id}", c.LiberarMesa).Methods(http.MethodPut)
 
 	v1Pedido := v1.PathPrefix("/pedidos").Subrouter()
 	v1Pedido.HandleFunc("", c.RegistrarPedido).Methods(http.MethodPost)
 	v1Pedido.HandleFunc("", c.ObtenerPedidos).Methods(http.MethodGet)
+
+	v1Gastos := v1.PathPrefix("/gastos").Subrouter()
+	v1Gastos.HandleFunc("/{id}", c.ObtenerGasto).Methods(http.MethodGet)
+	v1Gastos.HandleFunc("/{id}", c.ModificarGasto).Methods(http.MethodPut)
+	v1Gastos.HandleFunc("", c.ObtenerGastos).Methods(http.MethodGet)
+	v1Gastos.HandleFunc("", c.AgregarGasto).Methods(http.MethodPost)
+
+	v1Movimientos := v1.PathPrefix("/movimientos").Subrouter()
+	v1Movimientos.HandleFunc("/{id}", c.AgregarMovimiento).Methods(http.MethodPost)
+	v1Movimientos.HandleFunc("/{id}", c.ObtenerMovimientos).Methods(http.MethodGet)
 }
 
 func reports(api *mux.Router) {
