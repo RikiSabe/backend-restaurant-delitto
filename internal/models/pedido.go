@@ -9,6 +9,7 @@ type Pedido struct {
 	Fecha  time.Time `gorm:"column:fecha;not null" json:"fecha"`
 	Estado string    `gorm:"column:estado;size:100;not null" json:"estado"`
 	Origen string    `gorm:"column:origen" json:"origen"`
+	Comentario string `gorm:"column:comentario" json:"comentario"`
 	IDMesa uint      `gorm:"column:id_mesa" json:"id_mesa,omitempty"`
 	// IDUsuario uint      `gorm:"column:id_usuario" json:"id_usuario,omitempty"`
 

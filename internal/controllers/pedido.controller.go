@@ -21,6 +21,7 @@ type Productos struct {
 
 type PedidoEntrante struct {
 	Origen    string                          `json:"origen"`
+	Comentario    string                          `json:"comentario"`
 	Productos datatypes.JSONType[[]Productos] `json:"productos"`
 	Estado    string                          `json:"estado"`
 	IDMesa    uint                            `json:"id_mesa"`
@@ -45,6 +46,7 @@ func RegistrarPedido(w http.ResponseWriter, r *http.Request) {
 		Estado: pedidoEntrante.Estado,
 		Fecha:  time.Now(),
 		Origen: pedidoEntrante.Origen,
+		Comentario: pedidoEntrante.Comentario,
 		IDMesa: pedidoEntrante.IDMesa,
 	}
 

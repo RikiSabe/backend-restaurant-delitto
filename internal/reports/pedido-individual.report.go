@@ -26,6 +26,7 @@ var QueryPedidoIndividual = `
 		p.fecha,
 		p.estado,
 		p.origen,
+		p.comentario,
 		COALESCE(m.nombre, 'Sin Mesa') as mesa_nombre,
 		COALESCE(m.capacidad, 0) as mesa_capacidad
 	FROM pedidos p
@@ -60,6 +61,7 @@ type PedidoIndividual struct {
 	Fecha         time.Time `json:"fecha"`
 	Estado        string    `json:"estado"`
 	Origen        string    `json:"origen"`
+	Comentario    string    `json:"comentario"`
 	MesaNombre    string    `json:"mesa_nombre"`
 	MesaCapacidad uint      `json:"mesa_capacidad"`
 }
@@ -237,6 +239,20 @@ func makePDFPedidoIndividual(id_pedido string) (core.Maroto, error) {
 			Align: align.Left,
 		}),
 	)
+
+	if pedido.Comentario != "" {
+		m.AddRow(7,
+			text.NewCol(6, "COMENTARIO:", props.Text{
+				Top:   1.0,
+				Align: align.Left,
+				Style: fontstyle.Bold,
+			}),
+			text.NewCol(6, pedido.Comentario, props.Text{
+				Top:   1.0,
+				Align: align.Left,
+			}),
+		)
+	}
 
 	mesaInfo := pedido.MesaNombre
 	if pedido.MesaCapacidad > 0 {

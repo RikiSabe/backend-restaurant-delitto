@@ -20,3 +20,9 @@ var Producto = `
 	left join categoria_producto as cp on cp.id = p.id_categoria
 	where p.id = ?
 	limit 1;`
+
+var ProductoPorNombre = `
+	select id from productos
+	where nombre = ?
+	limit 1;
+`

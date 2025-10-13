@@ -197,6 +197,16 @@ func ModificarProducto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validar si el nombre del producto ya existe
+	nombre := r.FormValue("nombre")
+	var productoExistenteNombre models.Producto
+	if err := db.GDB.Where("nombre = ?", nombre).First(&productoExistenteNombre).Error; err == nil {
+		if productoExistenteNombre.ID != productoExistente.ID {
+			http.Error(w, "Este nombre ya existe", http.StatusBadRequest)
+			return
+		}
+	}
+
 	file, handler, err := r.FormFile("foto")
 	if err == nil {
 		defer file.Close()
