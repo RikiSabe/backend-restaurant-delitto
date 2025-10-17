@@ -3,10 +3,13 @@ package querys
 var Proovedor = `
 	select 
 		pro.id, 
+		pro.tipo,
 		pro.nombre, 
 		pro.telefono,
 		pro.correo,
 		pro.direccion,
+		pro.ci,
+		pro.nombre_encargado,
 		CASE 
 			WHEN pro.estado THEN 'Activo'
 			ELSE 'Inactivo'
@@ -18,10 +21,13 @@ var Proovedor = `
 var Proovedores = `
 	select 
 		pro.id, 
+		pro.tipo,
 		pro.nombre, 
 		pro.telefono,
 		pro.correo,
 		pro.direccion,
+		pro.ci,
+		pro.nombre_encargado,
 		CASE 
 			WHEN pro.estado THEN 'Activo'
 			ELSE 'Inactivo'

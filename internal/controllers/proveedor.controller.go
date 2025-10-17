@@ -12,20 +12,28 @@ import (
 )
 
 type ProveedorDAO struct {
-	ID        uint   `json:"id"`
-	Nombre    string `json:"nombre"`
-	Telefono  string `json:"telefono"`
-	Correo    string `json:"correo"`
-	Direccion string `json:"direccion"`
-	Estado    string `json:"estado"`
+	ID              uint   `json:"id"`
+	Tipo            string `json:"tipo"`
+	Nombre          string `json:"nombre"`
+	Telefono        string `json:"telefono"`
+	Correo          string `json:"correo"`
+	Direccion       string `json:"direccion"`
+	CI              string `json:"ci"`
+	NIT             string `json:"nit"`
+	NombreEncargado string `json:"nombre_encargado"`
+	Estado          string `json:"estado"`
 }
 
 type ProovedorModificado struct {
-	Nombre    string `json:"nombre"`
-	Telefono  string `json:"telefono"`
-	Correo    string `json:"correo"`
-	Direccion string `json:"direccion"`
-	Estado    string `json:"estado"`
+	Tipo            string `json:"tipo"`
+	Nombre          string `json:"nombre"`
+	Telefono        string `json:"telefono"`
+	Correo          string `json:"correo"`
+	Direccion       string `json:"direccion"`
+	CI              string `json:"ci"`
+	NIT             string `json:"nit"`
+	NombreEncargado string `json:"nombre_encargado"`
+	Estado          string `json:"estado"`
 }
 
 func ObtenerProveedores(w http.ResponseWriter, r *http.Request) {
@@ -71,11 +79,15 @@ func AgregarProveedor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	nuevoProveedor := models.Proveedor{
-		Nombre:    proveedor.Nombre,
-		Telefono:  proveedor.Telefono,
-		Correo:    proveedor.Correo,
-		Direccion: proveedor.Direccion,
-		Estado:    nuevoEstado,
+		Tipo:            proveedor.Tipo,
+		Nombre:          proveedor.Nombre,
+		Telefono:        proveedor.Telefono,
+		Correo:          proveedor.Correo,
+		Direccion:       proveedor.Direccion,
+		CI:              proveedor.CI,
+		NIT:             proveedor.NIT,
+		NombreEncargado: proveedor.NombreEncargado,
+		Estado:          nuevoEstado,
 	}
 
 	tx := db.GDB.Begin()
@@ -107,10 +119,14 @@ func ModificarProveedor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Cambios
+	proveedorExistente.Tipo = proveedorActualizado.Tipo
 	proveedorExistente.Nombre = proveedorActualizado.Nombre
 	proveedorExistente.Telefono = proveedorActualizado.Telefono
 	proveedorExistente.Correo = proveedorActualizado.Correo
 	proveedorExistente.Direccion = proveedorActualizado.Direccion
+	proveedorExistente.CI = proveedorActualizado.CI
+	proveedorExistente.NIT = proveedorActualizado.NIT
+	proveedorExistente.NombreEncargado = proveedorActualizado.NombreEncargado
 	nuevoEstado, err := functions.ActualizarEstado(proveedorActualizado.Estado)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

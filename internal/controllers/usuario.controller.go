@@ -7,6 +7,7 @@ import (
 	"backend-restaurant-delitto/internal/querys"
 	"encoding/json"
 	"net/http"
+	"regexp"
 
 	"github.com/gorilla/mux"
 )
@@ -16,6 +17,7 @@ type UsuarioDAO struct {
 	Nombre   string `json:"nombre"`
 	Apellido string `json:"apellido"`
 	CI       string `json:"ci"`
+	Celular  string `json:"celular"`
 	Usuario  string `json:"usuario"`
 	Contra   string `json:"contra"`
 	Estado   string `json:"estado"`
@@ -26,10 +28,25 @@ type UsuarioModificado struct {
 	Nombre   string `json:"nombre"`
 	Apellido string `json:"apellido"`
 	CI       string `json:"ci"`
+	Celular  string `json:"celular"`
 	Usuario  string `json:"usuario"`
 	Contra   string `json:"contra"`
 	Estado   string `json:"estado"`
 	Rol      string `json:"rol"`
+}
+
+// validatePassword checks if the password meets the criteria
+func validatePassword(password string) bool {
+	if len(password) < 8 {
+		return false
+	}
+	if !regexp.MustCompile(`[a-zA-Z]`).MatchString(password) {
+		return false
+	}
+	if !regexp.MustCompile(`[0-9]`).MatchString(password) {
+		return false
+	}
+	return true
 }
 
 func ObtenerUsuarios(w http.ResponseWriter, r *http.Request) {
@@ -67,6 +84,13 @@ func AgregarUsuario(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// Validate password
+	if !validatePassword(usuario.Contra) {
+		http.Error(w, "La contraseña debe tener al menos 8 caracteres, incluyendo letras y números.", http.StatusBadRequest)
+		return
+	}
+
 	nuevoEstado, err := functions.ActualizarEstado(usuario.Estado)
 	if err != nil {
 		http.Error(w, "Estado no valido", http.StatusBadRequest)
@@ -82,6 +106,7 @@ func AgregarUsuario(w http.ResponseWriter, r *http.Request) {
 		Nombre:   usuario.Nombre,
 		Apellido: usuario.Apellido,
 		CI:       usuario.CI,
+		Celular:  usuario.Celular,
 		Usuario:  usuario.Usuario,
 		Contra:   usuario.Contra,
 		Estado:   nuevoEstado,
@@ -116,21 +141,30 @@ func ModificarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate password if provided
+	if usuarioActualizado.Contra != "" {
+		if !validatePassword(usuarioActualizado.Contra) {
+			http.Error(w, "La contraseña debe tener al menos 8 caracteres, incluyendo letras y números.", http.StatusBadRequest)
+			return
+		}
+		usuarioExistente.Contra = usuarioActualizado.Contra
+	}
+
 	// Cambios
 	usuarioExistente.Nombre = usuarioActualizado.Nombre
 	usuarioExistente.Apellido = usuarioActualizado.Apellido
 	usuarioExistente.CI = usuarioActualizado.CI
+	usuarioExistente.Celular = usuarioActualizado.Celular
 	usuarioExistente.Usuario = usuarioActualizado.Usuario
-	usuarioExistente.Contra = usuarioActualizado.Contra
 	nuevoEstado, err := functions.ActualizarEstado(usuarioActualizado.Estado)
 	if err != nil {
-		http.Error(w, "Estado no valido", http.StatusInternalServerError)
+		http.Error(w, "Estado no valido", http.StatusBadRequest)
 		return
 	}
 	usuarioExistente.Estado = nuevoEstado
 	nuevoRol, err := functions.ActualizarRol(usuarioActualizado.Rol)
 	if err != nil {
-		http.Error(w, "Rol no valido", http.StatusInternalServerError)
+		http.Error(w, "Rol no valido", http.StatusBadRequest)
 		return
 	}
 	usuarioExistente.IDRol = nuevoRol

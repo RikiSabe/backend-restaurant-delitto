@@ -3,7 +3,7 @@ package querys
 var Usuarios = `
 	select u.id, 
 	concat(u.nombre, ' ', u.apellido) as nombre, 
-	u.ci, u.usuario,
+	u.ci, u.celular, u.usuario,
 	case 
 		when u.estado then 'Activo'
 		else 'Inactivo'
@@ -13,7 +13,7 @@ var Usuarios = `
 	order by u.id asc;`
 
 var Usuario = `
-	select u.id, u.nombre, u.apellido, u.ci, u.usuario, u.contra,
+	select u.id, u.nombre, u.apellido, u.ci, u.celular, u.usuario, u.contra,
 		CASE 
 			WHEN u.estado THEN 'Activo'
 			ELSE 'Inactivo'
