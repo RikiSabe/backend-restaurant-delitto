@@ -7,3 +7,5 @@ tmp
 # files on images/productos
 internal/images/productos/*
 !internal/images/productos/
+
+.air.toml
